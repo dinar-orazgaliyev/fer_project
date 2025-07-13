@@ -1,7 +1,8 @@
 import torch 
 import pandas as pd 
 import numpy as np 
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
+from copy import deepcopy
 
 
 class FER2013Dataset(Dataset):
@@ -29,3 +30,22 @@ class FER2013Dataset(Dataset):
             image = self.transform(image)
         
         return label,image
+
+class DataModule():
+    """
+    Data Module class that wraps around Dataset and returns train,test and val loaders
+    """
+    def __init__(self,path, transform, **loader_kwargs):
+        self.train_dataset = FER2013Dataset(path, usage='Training',transform=transform)
+        #self.transform = transform
+        self.test_dataset = FER2013Dataset(path,usage='PrivateTest')
+        self.val_dataset = FER2013Dataset(path,usage='PublicTest')
+        self.loader_kwargs = loader_kwargs
+    def get_train_loader(self):
+        return DataLoader(dataset=self.train_dataset,shuffle=True)
+    
+    def get_test_loader(self):
+        return DataLoader(dataset=self.test_dataset, **self.loader_kwargs)
+    
+    def get_val_loader(self):
+        return DataLoader(dataset=self.val_dataset, **self.loader_kwargs)
