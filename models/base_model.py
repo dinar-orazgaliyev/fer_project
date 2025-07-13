@@ -16,13 +16,7 @@ class BaseModel(nn.Module):
         Model prints with number of trainable parameters
         """
 
-        ret_str = super().__str__()
-        
-        #### TODO #######################################
-        # Print the number of **trainable** parameters  #
-        # by appending them to ret_str                  #
-        #################################################     
-
+        ret_str = super().__str__() 
         num_params = sum(p.numel() for p in self.parameters() if p.requires_grad)
         ret_str += f"\nTrainable parameters: {num_params}" 
            
