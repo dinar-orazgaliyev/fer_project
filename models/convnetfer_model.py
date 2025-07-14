@@ -1,5 +1,6 @@
 import numpy as np 
 import torch.nn as nn
+
 from typing import List, Callable
 
 from .base_model import BaseModel
@@ -32,11 +33,11 @@ class ConvNetFer(BaseModel):
                 layers.append(nn.MaxPool2d(kernel_size = self.maxpool_size, stride = self.stride_size))
             
             layers.append(self.activation())
+            if self.dropout and self.dropout > 0:
+                layers.append(nn.Dropout(self.dropout))
+
         fc_input_size = self.hidden_layers[-1] 
-        #self.classifier = nn.Linear(fc_input_size, self.num_classes)
-        self.classifier = nn.Sequential(nn.Linear(fc_input_size,100), nn.ReLU(),nn.Dropout(self.dropout), nn.Linear(100,self.num_classes))
-        
-        
+        self.classifier = nn.Sequential(nn.Linear(fc_input_size,100), nn.BatchNorm1d(100), nn.ReLU(),nn.Dropout(self.dropout), nn.Linear(100,self.num_classes))
         self.layers = nn.Sequential(*layers) 
 
     def forward(self,x):
