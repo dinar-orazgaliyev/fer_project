@@ -23,7 +23,7 @@ class ConvNetFer(BaseModel):
         layers = []
         for id,hidden_size in enumerate(self.hidden_layers):
             if id == 0:
-                layers.append(nn.Conv2d(in_channels = 3, out_channels = hidden_size, kernel_size=self.kernel_size,padding=1))
+                layers.append(nn.Conv2d(in_channels = 1, out_channels = hidden_size, kernel_size=self.kernel_size,padding=1))
             else:
                 layers.append(nn.Conv2d(in_channels = self.hidden_layers[id-1], out_channels = hidden_size, kernel_size = self.kernel_size,padding=1))
             if self.norm_layer:
