@@ -1,5 +1,5 @@
 name: FER_CNN
-model_name: Simple_CNN
+model_name: ConvNetFer
 model_args:
   input_shape:
     - 1
@@ -11,6 +11,8 @@ model_args:
     - 128
     - 64
   dropout: 0.3
+  activation: ReLU
+  norm_layer: BatchNorm2d
 data_args:
   data_dir: ../dataset
   path: ../dataset/icml_face_data.csv
