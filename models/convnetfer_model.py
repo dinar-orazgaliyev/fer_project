@@ -33,8 +33,10 @@ class ConvNetFer(BaseModel):
             
             layers.append(self.activation())
         fc_input_size = self.hidden_layers[-1] 
-        #layers.append(nn.Linear(fc_input_size,self.num_classes))
-        self.classifier = nn.Linear(fc_input_size, self.num_classes)
+        #self.classifier = nn.Linear(fc_input_size, self.num_classes)
+        self.classifier = nn.Sequential(nn.Linear(fc_input_size,100), nn.ReLU(),nn.Dropout(self.dropout), nn.Linear(100,self.num_classes))
+        
+        
         self.layers = nn.Sequential(*layers) 
 
     def forward(self,x):
