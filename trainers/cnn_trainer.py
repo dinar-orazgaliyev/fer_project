@@ -17,6 +17,7 @@ class CNNTrainer(BaseTrainer):
         config['model_args']['norm_layer'] = getattr(nn, config['model_args']['norm_layer'])
         self.model = eval(config['model_name'])(**config['model_args'])
         self.model.to(self._device)
+        self.model.apply(self.weights_init)
         self.train_loader = train_loader
         self.eval_loader = eval_loader
         self.criterion = getattr(nn,config['train_args']['criterion'])()
