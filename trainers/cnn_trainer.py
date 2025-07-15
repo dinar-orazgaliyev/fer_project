@@ -19,7 +19,7 @@ class CNNTrainer(BaseTrainer):
         self.model.to(self._device)
         self.train_loader = train_loader
         self.eval_loader = eval_loader
-        self.criterion = self.config['train_args']['criterion']
+        self.criterion = getattr(nn,config['train_args']['criterion'])()
         self.optimizer = optim.Adam(self.model.parameters(), lr=1e-3)
 
     def weights_init(self, m):
@@ -35,7 +35,9 @@ class CNNTrainer(BaseTrainer):
             nn.init.normal_(m.bias, 0.0, 1e-2)
 
     def _train_epoch(self):
-        
+        running_loss = 0.0  # initialize before the loop
+        correct = 0
+        total = 0
         # # Set model to train mode
         self.model.train()
         
