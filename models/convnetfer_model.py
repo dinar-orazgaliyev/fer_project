@@ -36,12 +36,14 @@ class ConvNetFer(BaseModel):
             if self.dropout and self.dropout > 0:
                 layers.append(nn.Dropout(self.dropout))
 
-        fc_input_size = self.hidden_layers[-1] 
+        fc_input_size = self.hidden_layers[-1]*12*12
         self.classifier = nn.Sequential(nn.Linear(fc_input_size,100), nn.BatchNorm1d(100), nn.ReLU(),nn.Dropout(self.dropout), nn.Linear(100,self.num_classes))
         self.layers = nn.Sequential(*layers) 
 
     def forward(self,x):
         out = self.layers(x)
+        print(f"Before view {out.shape}")
         out = out.view(out.size(0),-1)
+        print(f"After view {out.shape}")
         out = self.classifier(out)
         return out

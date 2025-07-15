@@ -16,25 +16,14 @@ class BaseTrainer:
     Base class for all trainers
     """
     def __init__(self, config, log_dir):
+        self.config = config
+        self.logger = logging.getLogger(__name__)
+        self.epochs = config['train_args']['epochs']
+        self._device = torch.device(config['train_args']['device'])
+        #self._configure_logging(log_dir=log_dir)
 
-        self.logger = logging.getLogger()
 
 
-
-    def _configure_logging(self, log_dir):
-        
-        self.logger.setLevel(1)
-        formatter = logging.Formatter('%(asctime)s:%(levelname)s : %(message)s')
-        if not os.path.exists(ospj(log_dir)):
-            os.mkdir(log_dir)
-        _log_file = ospj(log_dir, self.config['name']+".log")
-        if os.path.exists(_log_file):
-            print(f'Warning! Log file {_log_file} already exists! The logs will be appended!')
-        file_handler = logging.FileHandler(_log_file)
-        file_handler.setFormatter(formatter)
-        if (self.logger.hasHandlers()):
-            self.logger.handlers.clear()
-        self.logger.addHandler(file_handler)
     
 
 
@@ -48,7 +37,14 @@ class BaseTrainer:
         raise NotImplementedError
 
     def train(self):
-        pass
+        self.logger.info("----New Training Session----")
+
+        for epoch in range(self.epochs + 1):
+            self.logger.info(f"epoch {epoch}")
+            self.current_epoch = epoch
+            train_results = self._train_epoch()
+            log = {"epoch":epoch}
+            log.update(train_results)
 
     def should_evaluate(self):
         """

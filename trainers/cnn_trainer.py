@@ -1,16 +1,26 @@
 import torch
 import torch.nn as nn
-
+from functools import partial
 from tqdm import tqdm
+import torch.optim as optim
+import logging
 
 from torchvision.utils import make_grid
 from .base_trainer import BaseTrainer
-
+from models.convnetfer_model import ConvNetFer
 
 class CNNTrainer(BaseTrainer):
 
     def __init__(self, config, log_dir, train_loader, eval_loader=None):
-        pass
+        super().__init__(config,log_dir)
+        config['model_args']['activation'] = getattr(nn, config['model_args']['activation'])  # e.g., 'nn.ReLU' → nn.ReLU
+        config['model_args']['norm_layer'] = getattr(nn, config['model_args']['norm_layer'])
+        self.model = eval(config['model_name'])(**config['model_args'])
+        self.model.to(self._device)
+        self.train_loader = train_loader
+        self.eval_loader = eval_loader
+        self.criterion = self.config['train_args']['criterion']
+        self.optimizer = optim.Adam(self.model.parameters(), lr=1e-3)
 
     def weights_init(self, m):
         """
@@ -25,7 +35,48 @@ class CNNTrainer(BaseTrainer):
             nn.init.normal_(m.bias, 0.0, 1e-2)
 
     def _train_epoch(self):
-        pass
+        
+        # # Set model to train mode
+        self.model.train()
+        
+
+        self.logger.info(f"Start Training Epoch {self.current_epoch}/{self.epochs}, lr = {self.config['train_args']['optim_args']['lr']}")
+        pbar = tqdm(total=len(self.train_loader) * self.train_loader.batch_size, bar_format='{desc}: {percentage:3.0f}% {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}]')
+        for batch_idx, (labels,images) in enumerate(self.train_loader):
+            labels = labels.to(self._device)
+            images = images.to(self._device)
+            outputs = self.model(images)
+            loss = self.criterion(outputs, labels)
+            loss.backward()
+            self.optimizer.step()
+            running_loss += loss.item() * images.size(0)
+            _, predicted = torch.max(outputs, 1)
+            correct += (predicted == labels).sum().item()
+            total += labels.size(0)
+            pbar.set_postfix(loss=loss.item())
+
+        train_loss = running_loss / total
+        train_acc = correct / total
+        self.model.eval()
+        val_loss = 0.0
+        correct, total = 0, 0
+        with torch.no_grad():
+            for inputs, labels in self.eval_loader:
+                inputs, labels = inputs.to(self._device), labels.to(self._device)
+                outputs = self.model(inputs)
+                loss = self.criterion(outputs, labels)
+
+                val_loss += loss.item() * inputs.size(0)
+                _, predicted = torch.max(outputs, 1)
+                correct += (predicted == labels).sum().item()
+                total += labels.size(0)
+
+        val_loss /= total
+        val_acc = correct / total
+
+        print(f"Epoch {self.epoch+1}/{self.epochs} "
+              f"Train Loss: {train_loss:.4f} Acc: {train_acc:.4f} | "
+              f"Val Loss: {val_loss:.4f} Acc: {val_acc:.4f}")
         # """
         # Training logic for an epoch. Only takes care of doing a single training loop.
 
