@@ -6,6 +6,7 @@ import torch
 from numpy import inf
 from os.path import join as ospj
 
+from earlystopping import EarlyStopping
 
 try:
     import wandb
@@ -36,15 +37,23 @@ class BaseTrainer:
         """
         raise NotImplementedError
 
-    def train(self):
+    def train(self, patience=7, min_delta=1e-4):
         self.logger.info("----New Training Session----")
-
+        early_stopper = EarlyStopping(patience=patience, min_delta=min_delta)
         for epoch in range(self.epochs + 1):
+            self.epoch = epoch
             self.logger.info(f"epoch {epoch}")
             self.current_epoch = epoch
             train_results = self._train_epoch()
-            log = {"epoch":epoch}
+            log = {"epoch": epoch}
             log.update(train_results)
+            # Expect train_results to contain 'val_loss'
+            val_loss = train_results.get('val_loss', None)
+            if val_loss is not None:
+                early_stopper(val_loss)
+                if early_stopper.early_stop:
+                    print(f"Early stopping at epoch {epoch}")
+                    break
 
     def should_evaluate(self):
         """

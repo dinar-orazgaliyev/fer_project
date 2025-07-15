@@ -46,7 +46,7 @@ class CNNTrainer(BaseTrainer):
         pbar = tqdm(total=len(self.train_loader) * self.train_loader.batch_size, bar_format='{desc}: {percentage:3.0f}% {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}]')
         for batch_idx, (labels,images) in enumerate(self.train_loader):
             labels = labels.to(self._device)
-            images = images.to(self._device)
+            images = images.to(self._device).float()
             outputs = self.model(images)
             loss = self.criterion(outputs, labels)
             loss.backward()
@@ -63,7 +63,8 @@ class CNNTrainer(BaseTrainer):
         val_loss = 0.0
         correct, total = 0, 0
         with torch.no_grad():
-            for inputs, labels in self.eval_loader:
+            for labels, inputs in self.eval_loader:
+                inputs = inputs.float()  # Ensure inputs are float
                 inputs, labels = inputs.to(self._device), labels.to(self._device)
                 outputs = self.model(inputs)
                 loss = self.criterion(outputs, labels)
@@ -79,6 +80,15 @@ class CNNTrainer(BaseTrainer):
         print(f"Epoch {self.epoch+1}/{self.epochs} "
               f"Train Loss: {train_loss:.4f} Acc: {train_acc:.4f} | "
               f"Val Loss: {val_loss:.4f} Acc: {val_acc:.4f}")
+        
+        
+        return {
+            "train_loss": train_loss,
+            "train_acc": train_acc,
+            "val_loss": val_loss,
+            "val_acc": val_acc
+        }
+
         # """
         # Training logic for an epoch. Only takes care of doing a single training loop.
 
@@ -128,7 +138,7 @@ class CNNTrainer(BaseTrainer):
         # self.logger.debug(f"==> Finished Epoch {self.current_epoch}/{self.epochs}.")
         
         # return log_dict
-    
+
     @torch.no_grad()
     def evaluate(self, loader=None):
         pass
