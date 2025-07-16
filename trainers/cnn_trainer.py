@@ -13,8 +13,10 @@ class CNNTrainer(BaseTrainer):
 
     def __init__(self, config, log_dir, train_loader, eval_loader=None):
         super().__init__(config,log_dir)
-        config['model_args']['activation'] = getattr(nn, config['model_args']['activation'])  # e.g., 'nn.ReLU' → nn.ReLU
-        config['model_args']['norm_layer'] = getattr(nn, config['model_args']['norm_layer'])
+        if isinstance(config['model_args']['activation'], str):
+            config['model_args']['activation'] = getattr(nn, config['model_args']['activation'])
+        if isinstance(config['model_args']['norm_layer'], str):
+            config['model_args']['norm_layer'] = getattr(nn, config['model_args']['norm_layer'])
         self.model = eval(config['model_name'])(**config['model_args'])
         self.model.to(self._device)
         self.model.apply(self.weights_init)

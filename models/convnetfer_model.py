@@ -23,7 +23,7 @@ class ConvNetFer(BaseModel):
         self.dropout = dropout
         self.norm_layer = norm_layer
         self.kernel_size = (3, 3)
-        self.maxpool_size = (2, 2)
+        self.maxpool_size = (1, 1)
         self.stride_size = (2, 2)
 
         self.__build_model()
@@ -47,9 +47,11 @@ class ConvNetFer(BaseModel):
                 layers.append(nn.Dropout(self.dropout))
 
         self.layers = nn.Sequential(*layers)
-
+        print(layers)
         # Dummy forward pass to determine fc input size
         dummy_input = torch.zeros(1, self.input_channels, self.input_height, self.input_width)
+        print(f"Dummy input shape: {dummy_input.shape}")
+        self.layers.eval()
         with torch.no_grad():
             out = self.layers(dummy_input)
         fc_input_size = out.view(1, -1).shape[1]
