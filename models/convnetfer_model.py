@@ -22,32 +22,68 @@ class ConvNetFer(BaseModel):
         self.activation = activation
         self.dropout = dropout
         self.norm_layer = norm_layer
-        self.kernel_size = (3, 3)
-        self.maxpool_size = (1, 1)
+        # self.kernel_size_lst = [(7, 7), (5, 5), (5, 5), (3, 3), (3, 3), (3, 3)]
+        self.maxpool_size = (2, 2)
         self.stride_size = (2, 2)
 
         self.__build_model()
 
     def __build_model(self):
-        layers = []
+        # for idx, hidden_size in enumerate(self.hidden_layers):
+        #     in_channels = self.input_channels if idx == 0 else self.hidden_layers[idx - 1]
+        #     layers.append(nn.Conv2d(in_channels, hidden_size, kernel_size=self.kernel_size_lst[idx], padding=1))
 
-        for idx, hidden_size in enumerate(self.hidden_layers):
-            in_channels = self.input_channels if idx == 0 else self.hidden_layers[idx - 1]
-            layers.append(nn.Conv2d(in_channels, hidden_size, kernel_size=self.kernel_size, padding=1))
+        #     if self.norm_layer:
+        #         layers.append(self.norm_layer(num_features=hidden_size))
 
-            if self.norm_layer:
-                layers.append(self.norm_layer(num_features=hidden_size))
+        #     if idx < len(self.hidden_layers) - 3:
+        #         layers.append(nn.MaxPool2d(kernel_size=self.maxpool_size, stride=self.stride_size))
 
-            if idx < len(self.hidden_layers) - 1:
-                layers.append(nn.MaxPool2d(kernel_size=self.maxpool_size, stride=self.stride_size))
+        #     layers.append(self.activation())
 
-            layers.append(self.activation())
+        #     if self.dropout and self.dropout > 0:
+        #         layers.append(nn.Dropout(self.dropout))
+        # self.layers = nn.Sequential(*layers)
 
-            if self.dropout and self.dropout > 0:
-                layers.append(nn.Dropout(self.dropout))
+        self.layers = nn.Sequential(
+            # Block 1: in_channels=1, out_channels=64, kernel=12x12, POOL
+            nn.Conv2d(
+                self.input_channels, 128, kernel_size=(5, 5), padding=2
+            ),
+            nn.BatchNorm2d(128),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+            nn.Dropout(self.dropout),
+            # Block 2: in_channels=64, out_channels=128, kernel=8x8, POOL
+            nn.Conv2d(128, 128, kernel_size=(5, 5), padding=2),
+            nn.BatchNorm2d(128),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+            nn.Dropout(self.dropout),
+            # Block 3: in_channels=128, out_channels=256, kernel=6x6, POOL
+            nn.Conv2d(128, 128, kernel_size=(5, 5), padding=2),
+            nn.BatchNorm2d(128),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+            nn.Dropout(self.dropout),
+            # Block 4: in_channels=256, out_channels=512, kernel=3x3, NO POOL
+            nn.Conv2d(128, 64, kernel_size=(3, 3), padding=1),
+            nn.BatchNorm2d(64),
+            nn.ReLU(inplace=True),
+            nn.Dropout(self.dropout),
+            # Block 5: in_channels=512, out_channels=512, kernel=3x3, NO POOL
+            nn.Conv2d(64, 64, kernel_size=(3, 3), padding=1),
+            nn.BatchNorm2d(64),
+            nn.ReLU(inplace=True),
+            nn.Dropout(self.dropout),
+            # Block 6: in_channels=512, out_channels=512, kernel=3x3, NO POOL
+            nn.Conv2d(64, 16, kernel_size=(3, 3), padding=1),
+            nn.BatchNorm2d(16),
+            nn.ReLU(inplace=True),
+            nn.Dropout(self.dropout),
+        )
 
-        self.layers = nn.Sequential(*layers)
-        print(layers)
+        print(self.layers)
         # Dummy forward pass to determine fc input size
         dummy_input = torch.zeros(1, self.input_channels, self.input_height, self.input_width)
         print(f"Dummy input shape: {dummy_input.shape}")
@@ -57,16 +93,21 @@ class ConvNetFer(BaseModel):
         fc_input_size = out.view(1, -1).shape[1]
 
         self.classifier = nn.Sequential(
-            nn.Linear(fc_input_size, 100),
-            #nn.BatchNorm1d(100),
-            nn.LayerNorm(100),
+            nn.Linear(fc_input_size, 24),
+            nn.LayerNorm(24),
             nn.ReLU(),
-            nn.Dropout(self.dropout),
-            nn.Linear(100, self.num_classes)
+            nn.Linear(24, self.num_classes)
         )
 
     def forward(self, x):
         out = self.layers(x)
+
+        #print(f"Output shape1: {out.shape}")
+
         out = out.view(out.size(0), -1)
+
+        #print(f"Output shape2: {out.shape}")
+        
         out = self.classifier(out)
+
         return out

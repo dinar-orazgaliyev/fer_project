@@ -24,7 +24,7 @@ class FER2013Dataset(Dataset):
         image = np.expand_dims(image,axis=0) #shape(1,48,48)
 
         #convert to tensor 
-        image = torch.tensor(image, dtype=torch.float32) / 255.0 #should we divide by 255? TODO to think about it
+        image = torch.tensor(image, dtype=torch.float32) #should we divide by 255? TODO to think about it
 
         if self.transform:
             image = self.transform(image)
