@@ -46,8 +46,9 @@ class CNNTrainer(BaseTrainer):
         
 
         self.logger.info(f"Start Training Epoch {self.current_epoch}/{self.epochs}, lr = {self.config['train_args']['optim_args']['lr']}")
-        pbar = tqdm(total=len(self.train_loader) * self.train_loader.batch_size, bar_format='{desc}: {percentage:3.0f}% {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}]')
-        for batch_idx, (labels,images) in enumerate(self.train_loader):
+        epoch_progress = tqdm(self.train_loader, desc=f"Epoch {self.epoch+1}/{self.epochs}", leave=True, unit="batch")
+        
+        for batch_idx, (labels,images) in enumerate(epoch_progress):
             labels = labels.to(self._device)
             images = images.to(self._device).float()
             outputs = self.model(images)
@@ -58,7 +59,7 @@ class CNNTrainer(BaseTrainer):
             _, predicted = torch.max(outputs, 1)
             correct += (predicted == labels).sum().item()
             total += labels.size(0)
-            pbar.set_postfix(loss=loss.item())
+            epoch_progress.set_postfix(loss=f"{loss.item():.4f}")
 
         train_loss = running_loss / total
         train_acc = correct / total

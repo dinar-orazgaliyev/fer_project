@@ -42,7 +42,7 @@ class DataModule():
         self.val_dataset = FER2013Dataset(path,usage='PublicTest')
         self.loader_kwargs = loader_kwargs
     def get_train_loader(self):
-        return DataLoader(dataset=self.train_dataset,shuffle=True)
+        return DataLoader(dataset=self.train_dataset,shuffle=True, batch_size=self.loader_kwargs.get('batch_size', 2048))
     
     def get_test_loader(self):
         return DataLoader(dataset=self.test_dataset, **self.loader_kwargs)
