@@ -1,18 +1,18 @@
 name: FER_CNN
-model_name: ConvNetFer
+model_name: ResNetFer
 model_args:
   input_shape:
     - 1
     - 48
     - 48
   num_classes: 7
-  # hidden_layers:
-  #   - 64
-  #   - 64
-  #   - 32
-  #   - 32
-  #   - 16
-  #   - 16
+  hidden_layers:
+    - 64
+    - 64
+    - 32
+    - 32
+    - 16
+    - 16
   
   dropout: 0.3
   activation: "ReLU"

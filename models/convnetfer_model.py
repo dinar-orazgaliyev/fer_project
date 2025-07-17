@@ -7,9 +7,7 @@ from .base_model import BaseModel
 class ConvNetFer(BaseModel):
     def __init__(
         self,
-              # [channels, height, width]
         num_classes: int,
-        hidden_layers: List[int],
         activation: Callable,
         dropout: float,
         norm_layer: Callable = None,
@@ -18,33 +16,16 @@ class ConvNetFer(BaseModel):
         super().__init__()
         self.input_channels, self.input_height, self.input_width = input_shape
         self.num_classes = num_classes
-        self.hidden_layers = hidden_layers
         self.activation = activation
         self.dropout = dropout
         self.norm_layer = norm_layer
-        # self.kernel_size_lst = [(7, 7), (5, 5), (5, 5), (3, 3), (3, 3), (3, 3)]
+        
         self.maxpool_size = (2, 2)
         self.stride_size = (2, 2)
 
         self.__build_model()
 
     def __build_model(self):
-        # for idx, hidden_size in enumerate(self.hidden_layers):
-        #     in_channels = self.input_channels if idx == 0 else self.hidden_layers[idx - 1]
-        #     layers.append(nn.Conv2d(in_channels, hidden_size, kernel_size=self.kernel_size_lst[idx], padding=1))
-
-        #     if self.norm_layer:
-        #         layers.append(self.norm_layer(num_features=hidden_size))
-
-        #     if idx < len(self.hidden_layers) - 3:
-        #         layers.append(nn.MaxPool2d(kernel_size=self.maxpool_size, stride=self.stride_size))
-
-        #     layers.append(self.activation())
-
-        #     if self.dropout and self.dropout > 0:
-        #         layers.append(nn.Dropout(self.dropout))
-        # self.layers = nn.Sequential(*layers)
-
         self.layers = nn.Sequential(
             # Block 1: in_channels=1, out_channels=64, kernel=12x12, POOL
             nn.Conv2d(
