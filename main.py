@@ -6,9 +6,24 @@ import argparse
 from pathlib import Path
 from trainers.resnet_trainer import ResNetTrainer
 from trainers.cnn_trainer import CNNTrainer
-
+import logging 
+from datetime import datetime
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
+def setup_logging(log_dir, log_name="train.log"):
+    log_dir = Path(log_dir)
+    log_dir.mkdir(parents=True, exist_ok=True)
+    log_path = log_dir / log_name
+
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
+        handlers=[
+            logging.FileHandler(log_path),
+            logging.StreamHandler(sys.stdout)
+        ]
+    )
+    logging.info(f"Logging to {log_path}")
 
 def main():
     parser = argparse.ArgumentParser("Model_cfg")
@@ -22,6 +37,7 @@ def main():
         cfg = yaml.safe_load(f)
         data_cfg = cfg["data_args"]
 
+    
     if args.model == "resnet_fer":
         transform = transforms.Compose(
             [
@@ -46,6 +62,9 @@ def main():
                 transforms.Normalize(mean=[0.5], std=[0.5]),  # Normalize
             ]
         )
+    now = datetime.now().strftime("%Y%m%d_%H%M%S")
+    log_name = f"model_{args.model}_{now}.log"
+    setup_logging(cfg.get("log_dir", "log/"), log_name=log_name)
     dm = DataModule(
         path=data_cfg["path"],
         model_name=args.model,
@@ -72,6 +91,7 @@ def main():
             eval_loader=val_loader,
         )
     trainer.train()
+    trainer.save_model(cfg['train_args']['save_path'])
 
 
 if __name__ == "__main__":

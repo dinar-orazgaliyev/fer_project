@@ -23,7 +23,6 @@ class ResNetFer(BaseModel):
         self.dropout = dropout
         self.norm_layer = norm_layer
         self.input_channels, self.input_height, self.input_width = input_shape
-        #self.pre_conv = nn.Conv2d(1,3,kernel_size=1)
         self.model.fc = nn.Sequential(
             nn.Dropout(self.dropout),
             nn.Linear(self.model.fc.in_features, self.num_classes),
@@ -31,9 +30,6 @@ class ResNetFer(BaseModel):
         
 
 
-
     def forward(self, x):
-        #x = self.pre_conv(x)
-        #x = self.model(x)
         return self.model(x)
         

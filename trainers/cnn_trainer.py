@@ -9,6 +9,8 @@ from torchvision.utils import make_grid
 from .base_trainer import BaseTrainer
 from models.convnetfer_model import ConvNetFer
 
+
+logger = logging.getLogger(__name__)
 class CNNTrainer(BaseTrainer):
 
     def __init__(self, config,  train_loader, eval_loader=None):
@@ -87,7 +89,9 @@ class CNNTrainer(BaseTrainer):
               f"Train Loss: {train_loss:.4f} Acc: {train_acc:.4f} | "
               f"Val Loss: {val_loss:.4f} Acc: {val_acc:.4f}")
         
-        
+        logger.info(f"Epoch {self.epoch+1}/{self.epochs} "
+              f"Train Loss: {train_loss:.4f} Acc: {train_acc:.4f} | "
+              f"Val Loss: {val_loss:.4f} Acc: {val_acc:.4f}")
         return {
             "train_loss": train_loss,
             "train_acc": train_acc,

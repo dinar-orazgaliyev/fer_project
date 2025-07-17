@@ -5,7 +5,7 @@ from abc import abstractmethod
 import torch
 from numpy import inf
 from os.path import join as ospj
-
+from torch.utils.tensorboard import SummaryWriter
 from utils.earlystopping import EarlyStopping
 
 try:
@@ -22,7 +22,7 @@ class BaseTrainer:
         self.epochs = config['train_args']['epochs']
         self._device = torch.device(config['train_args']['device'])
         #self._configure_logging(log_dir=log_dir)
-
+        self.writer = SummaryWriter(log_dir=log_dir)
 
 
     
@@ -39,8 +39,8 @@ class BaseTrainer:
 
     def train(self, patience=7, min_delta=1e-4):
         self.logger.info("----New Training Session----")
-        #early_stopper = EarlyStopping(patience=patience, min_delta=min_delta)
-        for epoch in range(self.epochs + 1):
+        early_stopper = EarlyStopping(patience=patience, min_delta=min_delta)
+        for epoch in range(self.epochs):
             self.epoch = epoch
             self.logger.info(f"epoch {epoch}")
             self.current_epoch = epoch
@@ -49,25 +49,16 @@ class BaseTrainer:
             log.update(train_results)
             # Expect train_results to contain 'val_loss'
             val_loss = train_results.get('val_loss', None)
-            # if val_loss is not None:
-            #     early_stopper(val_loss)
-            #     if early_stopper.early_stop:
-            #         print(f"Early stopping at epoch {epoch}")
-            #         break
+            self.writer.add_scalar("Loss/train", train_results["train_loss"], epoch)
+            self.writer.add_scalar("Loss/val", train_results["val_loss"], epoch)
+            self.writer.add_scalar("Accuracy/train", train_results["train_acc"], epoch)
+            self.writer.add_scalar("Accuracy/val", train_results["val_acc"], epoch)
+            if val_loss is not None:
+                early_stopper(val_loss)
+                if early_stopper.early_stop:
+                    print(f"Early stopping at epoch {epoch}")
+                    break
 
-    def should_evaluate(self):
-        """
-        Based on the self.current_epoch and self.eval_interval, determine if we should evaluate.
-        You can take hint from saving logic implemented in BaseTrainer.train() method
-
-        returns a Boolean
-        """
-        ###  TODO  ################################################
-        # Based on the self.current_epoch and self.eval_interval, determine if we should evaluate.
-        # You can take hint from saving logic implemented in BaseTrainer.train() method
-        # eval_period??
-        return self.current_epoch % self.eval_period == 0
-        #########################################################
     
     @abstractmethod # To be implemented by the child classes!
     def evaluate(self, loader=None):
@@ -86,6 +77,8 @@ class BaseTrainer:
         : param path: path to save model (including filename.)
         """
         self.logger.info("Saving checkpoint: {} ...".format(path))
+        if path is not None:
+            os.makedirs(os.path.dirname(path), exist_ok=True)
         torch.save(self.model.state_dict(), path)
         self.logger.info("Checkpoint saved.")
     

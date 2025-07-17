@@ -33,7 +33,7 @@ class FER2013Dataset(Dataset):
                 image = torch.tensor(image, dtype=torch.float32).permute(2, 0, 1) / 255.0  # (3,48,48)
         else: 
             image = np.expand_dims(image,axis=0)
-            image = torch.tensor(image, dtype=torch.float32)
+            image = torch.tensor(image, dtype=torch.float32) / 255.0
             if self.transform:
                 image = self.transform(image) 
 

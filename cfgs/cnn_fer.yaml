@@ -32,4 +32,4 @@ train_args:
     step_size: 10
     gamma: 0.1
 
-log_dir: logdir/
+log_dir: log/

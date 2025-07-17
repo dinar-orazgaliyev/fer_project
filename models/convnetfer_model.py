@@ -1,8 +1,10 @@
 import torch
 import torch.nn as nn
 from typing import List, Callable
+import logging
 
 from .base_model import BaseModel
+logger = logging.getLogger(__name__)
 
 class ConvNetFer(BaseModel):
     def __init__(
@@ -24,7 +26,8 @@ class ConvNetFer(BaseModel):
         self.stride_size = (2, 2)
 
         self.__build_model()
-
+        logger.info(self.layers)
+        logger.info(self.classifier)
     def __build_model(self):
         self.layers = nn.Sequential(
             # Block 1: in_channels=1, out_channels=64, kernel=12x12, POOL
@@ -64,7 +67,7 @@ class ConvNetFer(BaseModel):
             nn.Dropout(self.dropout),
         )
 
-        print(self.layers)
+        
 
         self.classifier = nn.Sequential(
             nn.Linear(576, 24),
@@ -72,6 +75,7 @@ class ConvNetFer(BaseModel):
             nn.ReLU(),
             nn.Linear(24, self.num_classes)
         )
+        
 
     def forward(self, x):
         out = self.layers(x)
