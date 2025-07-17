@@ -8,6 +8,7 @@ from copy import deepcopy
 class FER2013Dataset(Dataset):
 
     def __init__(self,csv_path,model_name,usage='Training',transform=None):
+
         self.data = pd.read_csv(csv_path)
         self.data = self.data[self.data['Usage'] == usage]
         self.transform = transform 
@@ -45,6 +46,7 @@ class DataModule():
     Data Module class that wraps around Dataset and returns train,test and val loaders
     """
     def __init__(self,path, model_name, transform, **loader_kwargs):
+        
         self.train_dataset = FER2013Dataset(path,model_name, usage='Training',transform=transform)
         #self.transform = transform
         self.test_dataset = FER2013Dataset(path,model_name,usage='PrivateTest')
