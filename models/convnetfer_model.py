@@ -16,7 +16,7 @@ class ConvNetFer(BaseModel):
         super().__init__()
         self.input_channels, self.input_height, self.input_width = input_shape
         self.num_classes = num_classes
-        self.activation = activation
+        #self.activation = activation
         self.dropout = dropout
         self.norm_layer = norm_layer
         
@@ -66,15 +66,16 @@ class ConvNetFer(BaseModel):
 
         print(self.layers)
         # Dummy forward pass to determine fc input size
-        dummy_input = torch.zeros(1, self.input_channels, self.input_height, self.input_width)
-        print(f"Dummy input shape: {dummy_input.shape}")
-        self.layers.eval()
-        with torch.no_grad():
-            out = self.layers(dummy_input)
-        fc_input_size = out.view(1, -1).shape[1]
-
+        # dummy_input = torch.zeros(1, self.input_channels, self.input_height, self.input_width)
+        # print(f"Dummy input shape: {dummy_input.shape}")
+        # self.layers.eval()
+        # with torch.no_grad():
+        #     out = self.layers(dummy_input)
+        #     print(f"before fc size {out.shape}")
+        # fc_input_size = out.view(1, -1).shape[1]
+        # print(f"FC input size {fc_input_size}")
         self.classifier = nn.Sequential(
-            nn.Linear(fc_input_size, 24),
+            nn.Linear(576, 24),
             nn.LayerNorm(24),
             nn.ReLU(),
             nn.Linear(24, self.num_classes)

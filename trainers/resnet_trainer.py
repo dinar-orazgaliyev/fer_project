@@ -7,36 +7,42 @@ import logging
 
 from torchvision.utils import make_grid
 from .base_trainer import BaseTrainer
-from models.convnetfer_model import ConvNetFer
+from models.resnetfer_model import ResNetFer
 
-class CNNTrainer(BaseTrainer):
+class ResNetTrainer(BaseTrainer):
 
     def __init__(self, config,  train_loader, eval_loader=None):
-        self.log_dir = config['log_dir']
-        super().__init__(config,self.log_dir)
-        if isinstance(config['model_args']['activation'], str):
-            config['model_args']['activation'] = getattr(nn, config['model_args']['activation'])
-        if isinstance(config['model_args']['norm_layer'], str):
-            config['model_args']['norm_layer'] = getattr(nn, config['model_args']['norm_layer'])
-        self.model = eval(config['model_name'])(**config['model_args'])
-        self.model.to(self._device)
-        self.model.apply(self.weights_init)
-        self.train_loader = train_loader
-        self.eval_loader = eval_loader
-        self.criterion = getattr(nn,config['train_args']['criterion'])()
-        self.optimizer = optim.Adam(self.model.parameters(), lr=1e-3)
+            self.log_dir = config['log_dir']
+            super().__init__(config, self.log_dir)
 
-    def weights_init(self, m):
-        """
-        Initializes the model weights! Must be used with .apply of an nn.Module so that it works recursively!
-        """
-        if isinstance(m, nn.Conv2d):
-            nn.init.xavier_uniform_(m.weight)
-            nn.init.constant_(m.bias, 0.0)
+            # Handle string-to-class conversion for model_args
+            model_args = config['model_args'].copy()  # Avoid modifying original config
 
-        if isinstance(m, nn.Linear):
-            nn.init.normal_(m.weight, 0.0, 1e-2)
-            nn.init.normal_(m.bias, 0.0, 1e-2)
+            # Convert activation from string to class if needed
+            if isinstance(model_args.get('activation'), str):
+                model_args['activation'] = getattr(nn, model_args['activation'])
+
+            # Convert norm_layer from string to class if needed
+            if isinstance(model_args.get('norm_layer'), str):
+                model_args['norm_layer'] = getattr(nn, model_args['norm_layer'])
+
+            # Instantiate model
+            self.model = eval(config['model_name'])(**model_args)
+            self.model.to(self._device)
+
+            # Dataloaders
+            self.train_loader = train_loader
+            self.eval_loader = eval_loader
+
+            # Loss function
+            criterion_name = config['train_args'].get('criterion', 'CrossEntropyLoss')
+            self.criterion = getattr(nn, criterion_name)()
+
+            # Optimizer
+            self.optimizer = optim.Adam(self.model.parameters(), lr=config['train_args'].get('lr', 1e-3))
+
+
+
 
     def _train_epoch(self):
         running_loss = 0.0  # initialize before the loop
@@ -50,6 +56,7 @@ class CNNTrainer(BaseTrainer):
         epoch_progress = tqdm(self.train_loader, desc=f"Epoch {self.epoch+1}/{self.epochs}", leave=True, unit="batch")
         
         for batch_idx, (labels,images) in enumerate(epoch_progress):
+            
             labels = labels.to(self._device)
             images = images.to(self._device).float()
             self.optimizer.zero_grad()
@@ -57,6 +64,7 @@ class CNNTrainer(BaseTrainer):
             loss = self.criterion(outputs, labels)
             loss.backward()
             self.optimizer.step()
+            
             running_loss += loss.item() * images.size(0)
             _, predicted = torch.max(outputs, 1)
             correct += (predicted == labels).sum().item()

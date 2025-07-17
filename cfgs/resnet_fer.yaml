@@ -1,4 +1,4 @@
-name: FER_CNN
+name: FER_resnet
 model_name: ResNetFer
 model_args:
   input_shape:
@@ -6,20 +6,20 @@ model_args:
     - 48
     - 48
   num_classes: 7
-  hidden_layers:
-    - 64
-    - 64
-    - 32
-    - 32
-    - 16
-    - 16
+  # hidden_layers:
+  #   - 64
+  #   - 64
+  #   - 32
+  #   - 32
+  #   - 16
+  #   - 16
   
   dropout: 0.3
-  activation: "ReLU"
+  activation: ReLU
   norm_layer: "BatchNorm2d"
 data_args:
-  data_dir: ../dataset
-  path: ../dataset/icml_face_data.csv
+  data_dir: dataset
+  path: dataset/icml_face_data.csv
   batch_size: 512
   num_workers: 8
   pin_memory: true
@@ -28,13 +28,15 @@ train_args:
   log_interval: 10
   seed: 42
   device: cuda:0
-  save_path: checkpoints/fer_cnn.pth
+  save_path: checkpoints/fer_resnet.pth
   criterion: "CrossEntropyLoss"
   optim_args:
     optimizer: "Adam"
-    lr: 0.003
+    lr: 1e-4
     weight_decay: 0.0001
   scheduler_args:
     scheduler: "StepLR"
     step_size: 10
     gamma: 0.1
+log_dir: logdir/
+log_dir: logdir/

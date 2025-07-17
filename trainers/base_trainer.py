@@ -6,7 +6,7 @@ import torch
 from numpy import inf
 from os.path import join as ospj
 
-from earlystopping import EarlyStopping
+from utils.earlystopping import EarlyStopping
 
 try:
     import wandb

@@ -6,20 +6,13 @@ model_args:
     - 48
     - 48
   num_classes: 7
-  # hidden_layers:
-  #   - 64
-  #   - 64
-  #   - 32
-  #   - 32
-  #   - 16
-  #   - 16
   
   dropout: 0.3
   activation: "ReLU"
   norm_layer: "BatchNorm2d"
 data_args:
-  data_dir: ../dataset
-  path: ../dataset/icml_face_data.csv
+  data_dir: dataset
+  path: dataset/icml_face_data.csv
   batch_size: 512
   num_workers: 8
   pin_memory: true
@@ -38,3 +31,5 @@ train_args:
     scheduler: "StepLR"
     step_size: 10
     gamma: 0.1
+
+log_dir: logdir/
