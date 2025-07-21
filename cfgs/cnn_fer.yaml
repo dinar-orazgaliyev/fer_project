@@ -22,7 +22,7 @@ train_args:
   seed: 42
   device: cuda:0
   save_path: checkpoints/fer_cnn.pth
-  criterion: "CrossEntropyLoss"
+  criterion: "FocalLoss"
   optim_args:
     optimizer: "Adam"
     lr: 0.001

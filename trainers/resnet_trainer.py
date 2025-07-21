@@ -11,8 +11,14 @@ from models.resnetfer_model import ResNetFer
 
 from torch.utils.tensorboard import SummaryWriter
 from utils.earlystopping import EarlyStopping
+from utils.focalloss import FocalLoss
 
 logger = logging.getLogger(__name__)
+
+LOSSFUNC_DICT = {
+        'FocalLoss': FocalLoss,
+        'CrossEntropyLoss': nn.CrossEntropyLoss
+}
 class ResNetTrainer(BaseTrainer):
     def __init__(self, config, train_loader, eval_loader=None):
         # Call the parent's __init__ to set up logger, writer, etc.
@@ -65,8 +71,8 @@ class ResNetTrainer(BaseTrainer):
 
         # Loss function
         # self.criterion = nn.CrossEntropyLoss(label_smoothing=0.1)
-        criterion_name = config['train_args'].get('criterion', 'CrossEntropyLoss')
-        self.criterion = getattr(nn, criterion_name)()
+        loss_name  = config['train_args']['criterion']
+        self.criterion = LOSSFUNC_DICT[loss_name]()
 
     def _train_epoch(self):
         running_loss = 0.0  # initialize before the loop

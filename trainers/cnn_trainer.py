@@ -8,9 +8,14 @@ import logging
 from torchvision.utils import make_grid
 from .base_trainer import BaseTrainer
 from models.convnetfer_model import ConvNetFer
-
+from utils.focalloss import FocalLoss
 
 logger = logging.getLogger(__name__)
+LOSSFUNC_DICT = {
+        'FocalLoss': FocalLoss,
+    'CrossEntropyLoss': nn.CrossEntropyLoss
+}
+
 class CNNTrainer(BaseTrainer):
 
     def __init__(self, config,  train_loader, eval_loader=None):
@@ -25,8 +30,9 @@ class CNNTrainer(BaseTrainer):
         self.model.apply(self.weights_init)
         self.train_loader = train_loader
         self.eval_loader = eval_loader
-        # self.criterion = getattr(nn,config['train_args']['criterion'])()
-        self.criterion = nn.CrossEntropyLoss(label_smoothing=0.1)
+        loss_name  = config['train_args']['criterion']
+        self.criterion = LOSSFUNC_DICT[loss_name]()
+        #self.criterion = nn.CrossEntropyLoss(label_smoothing=0.1)
         self.optimizer = optim.Adam(
             self.model.parameters(),
             lr=config['train_args']['optim_args']['lr'],

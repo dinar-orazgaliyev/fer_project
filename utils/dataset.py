@@ -13,7 +13,7 @@ class FER2013Dataset(Dataset):
         self.data = self.data[self.data['Usage'] == usage]
         self.transform = transform 
         self.model_name = model_name
-    
+        
     def __len__(self):
         return len(self.data)
     
@@ -29,6 +29,7 @@ class FER2013Dataset(Dataset):
         
             if self.transform:
                 image = self.transform(image)  # transform expects HWC or PIL image
+                
             else:
                 # convert to tensor channel-first if no transform
                 image = torch.tensor(image, dtype=torch.float32).permute(2, 0, 1) / 255.0  # (3,48,48)
