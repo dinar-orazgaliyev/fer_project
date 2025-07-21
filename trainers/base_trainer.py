@@ -37,7 +37,7 @@ class BaseTrainer:
         """
         raise NotImplementedError
 
-    def train(self, patience=7, min_delta=1e-4):
+    def train(self, patience=5, min_delta=1e-4):
         self.logger.info("----New Training Session----")
         early_stopper = EarlyStopping(patience=patience, min_delta=min_delta)
         for epoch in range(self.epochs):

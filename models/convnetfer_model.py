@@ -28,52 +28,62 @@ class ConvNetFer(BaseModel):
         self.__build_model()
         logger.info(self.layers)
         logger.info(self.classifier)
+
     def __build_model(self):
         self.layers = nn.Sequential(
-            # Block 1: in_channels=1, out_channels=64, kernel=12x12, POOL
-            nn.Conv2d(
-                self.input_channels, 128, kernel_size=(5, 5), padding=2
-            ),
-            nn.BatchNorm2d(128),
-            nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=2, stride=2),
-            nn.Dropout(self.dropout),
-            # Block 2: in_channels=64, out_channels=128, kernel=8x8, POOL
-            nn.Conv2d(128, 128, kernel_size=(5, 5), padding=2),
-            nn.BatchNorm2d(128),
-            nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=2, stride=2),
-            nn.Dropout(self.dropout),
-            # Block 3: in_channels=128, out_channels=256, kernel=6x6, POOL
-            nn.Conv2d(128, 128, kernel_size=(5, 5), padding=2),
-            nn.BatchNorm2d(128),
-            nn.ReLU(inplace=True),
-            nn.MaxPool2d(kernel_size=2, stride=2),
-            nn.Dropout(self.dropout),
-            # Block 4: in_channels=256, out_channels=512, kernel=3x3, NO POOL
-            nn.Conv2d(128, 64, kernel_size=(3, 3), padding=1),
+            # --- Conv Block 1: 48x48 -> 24x24 ---
+            # in_channels=1, out_channels=64
+            nn.Conv2d(self.input_channels, 64, kernel_size=3, padding=1),
             nn.BatchNorm2d(64),
             nn.ReLU(inplace=True),
-            nn.Dropout(self.dropout),
-            # Block 5: in_channels=512, out_channels=512, kernel=3x3, NO POOL
-            nn.Conv2d(64, 64, kernel_size=(3, 3), padding=1),
+            nn.Conv2d(64, 64, kernel_size=3, padding=1),
             nn.BatchNorm2d(64),
             nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2, stride=2),
             nn.Dropout(self.dropout),
-            # Block 6: in_channels=512, out_channels=512, kernel=3x3, NO POOL
-            nn.Conv2d(64, 16, kernel_size=(3, 3), padding=1),
-            nn.BatchNorm2d(16),
+            # --- Conv Block 2: 24x24 -> 12x12 ---
+            # in_channels=64, out_channels=128
+            nn.Conv2d(64, 128, kernel_size=3, padding=1),
+            nn.BatchNorm2d(128),
             nn.ReLU(inplace=True),
+            nn.Conv2d(128, 128, kernel_size=3, padding=1),
+            nn.BatchNorm2d(128),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+            nn.Dropout(self.dropout),
+            # --- Conv Block 3: 12x12 -> 6x6 ---
+            # in_channels=128, out_channels=256
+            nn.Conv2d(128, 256, kernel_size=3, padding=1),
+            nn.BatchNorm2d(256),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(256, 256, kernel_size=3, padding=1),
+            nn.BatchNorm2d(256),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2, stride=2),
+            nn.Dropout(self.dropout),
+            # --- Conv Block 4: 6x6 -> 3x3 ---
+            # in_channels=256, out_channels=512
+            nn.Conv2d(256, 512, kernel_size=3, padding=1),
+            nn.BatchNorm2d(512),
+            nn.ReLU(inplace=True),
+            nn.Conv2d(512, 512, kernel_size=3, padding=1),
+            nn.BatchNorm2d(512),
+            nn.ReLU(inplace=True),
+            nn.MaxPool2d(kernel_size=2, stride=2),
             nn.Dropout(self.dropout),
         )
 
-        
-
+        # After the conv layers, the feature map is (B, 512, 3, 3).
+        # We need to calculate the flattened size for the linear layer.
+        # Flattened size = 512 * 3 * 3 = 4608
         self.classifier = nn.Sequential(
-            nn.Linear(576, 24),
-            nn.LayerNorm(24),
-            nn.ReLU(),
-            nn.Linear(24, self.num_classes)
+            nn.Linear(4608, 256),
+            nn.BatchNorm1d(256),
+            nn.ReLU(inplace=True),
+            # A stronger dropout is recommended for the dense classifier part
+            # to prevent overfitting.
+            nn.Dropout(0.4),
+            nn.Linear(256, self.num_classes),
         )
         
 

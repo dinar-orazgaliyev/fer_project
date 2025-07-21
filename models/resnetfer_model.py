@@ -7,29 +7,41 @@ from .base_model import BaseModel
 
 
 class ResNetFer(BaseModel):
+    """
+    A ResNet-18 model fine-tuned for FER.
+    This class has a clean __init__ signature and a correct forward pass.
+    """
 
-    def __init__(
-        self,
-        num_classes: int,
-        activation: Callable,
-        dropout: float,
-        norm_layer: Callable = None,
-        input_shape: List[int] = [1, 48, 48],
-    ):
+    # The __init__ method now ONLY asks for what it truly needs.
+    def __init__(self, num_classes: int, dropout: float):
         super().__init__()
-        self.model = models.resnet18(pretrained=True)
-        self.num_classes = num_classes
-        self.activation = activation
-        self.dropout = dropout
-        self.norm_layer = norm_layer
-        self.input_channels, self.input_height, self.input_width = input_shape
-        self.model.fc = nn.Sequential(
-            nn.Dropout(self.dropout),
-            nn.Linear(self.model.fc.in_features, self.num_classes),
-        )
-        
 
+        # Load the pre-trained model into a temporary local variable
+        resnet = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
+
+        # 1. Explicitly define the feature extractor
+        self.feature_extractor = nn.Sequential(*list(resnet.children())[:-1])
+
+        # 2. Explicitly define the new classifier head
+        num_ftrs = resnet.fc.in_features
+        self.classifier = nn.Sequential(
+            nn.Linear(num_ftrs, 256),
+            nn.BatchNorm1d(256),
+            nn.ReLU(inplace=True),
+            nn.Dropout(p=dropout),
+            nn.Linear(256, num_classes),
+        )
 
     def forward(self, x):
-        return self.model(x)
+        """Defines the correct forward pass for the refactored model."""
+        # 1. Pass the input through the feature extractor
+        features = self.feature_extractor(x)
+        
+        # 2. Flatten the output for the classifier
+        features = torch.flatten(features, 1)
+        
+        # 3. Pass the flattened features through the new classifier
+        output = self.classifier(features)
+        
+        return output
         

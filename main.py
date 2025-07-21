@@ -43,12 +43,15 @@ def main():
             [
                 transforms.ToPILImage(),
                 transforms.RandomHorizontalFlip(p=0.5),
+                transforms.ColorJitter(brightness=0.2, contrast=0.2),  # Adjust brightness/contrast
                 transforms.RandomRotation(degrees=10),
                 transforms.RandomCrop(48, padding=4),
                 transforms.ToTensor(),
+                transforms.Lambda(lambda x: x.expand(3, -1, -1)),
                 transforms.Normalize(
                     mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
                 ),
+                transforms.RandomErasing(p=0.5, scale=(0.02, 0.2)),
             ]
         )
 
@@ -56,9 +59,11 @@ def main():
         transform = transforms.Compose(
             [   transforms.ToPILImage(),
                 transforms.RandomHorizontalFlip(p=0.5),  # Flip images horizontally
+                transforms.ColorJitter(brightness=0.2, contrast=0.2),  # Adjust brightness/contrast
                 transforms.RandomRotation(degrees=10),  # Slight random rotation
                 transforms.RandomCrop(48, padding=4),  # Random crop with padding
-                transforms.ToTensor(),                         # Convert to tensor (if not already)
+                transforms.ToTensor(),  # Convert to tensor (if not already)
+                transforms.RandomErasing(p=0.5, scale=(0.02, 0.2), ratio=(0.3, 3.3), value=0),  # RandomErasing is applied to the tensor
                 transforms.Normalize(mean=[0.5], std=[0.5]),  # Normalize
             ]
         )
@@ -80,7 +85,7 @@ def main():
 
     if args.model == "resnet_fer":
         trainer = ResNetTrainer(
-            config=cfg,
+            config=cfg, 
             train_loader=train_loader,
             eval_loader=val_loader,
         )
