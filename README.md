@@ -4,7 +4,7 @@ Facial Emotion Recognition project
 # Facial Emotion Recognition using CNN
 
 PyTorch-based framework for Facial Emotion Recognition (FER), built around custom CNN architectures.  
-Inspired by EfficientFER and adaptable to multiple backbones.
+
 
 ---
 
