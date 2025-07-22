@@ -8,8 +8,22 @@ Inspired by EfficientFER and adaptable to multiple backbones.
 
 ---
 
+## 📦 Project Structure
 
-<pre><code>## 📦 Project Structure ```text fer_project/ │ ├── main.py # Main entry point ├── models/ # Contains CNN and ResNet architectures ├── trainers/ # Trainer logic for CNNs ├── utils/ # Datasets, transforms, loss functions, etc. │ ├── dataset.py │ └── losses.py ├── cfgs/ # YAML config files for training ├── dataset/ # FER2013 CSV goes here │ └── icml_face_data.csv ├── notebooks/ # Optional notebooks for EDA/experiments └── README.md ``` </code></pre>
+fer_project/
+│
+├── main.py
+├── models/
+├── trainers/
+├── utils/
+│   ├── dataset.py
+│   └── losses.py
+├── cfgs/
+├── dataset/
+│   └── icml_face_data.csv
+├── notebooks/
+└── README.md
+
 
 ## 🔧 Setup
 
