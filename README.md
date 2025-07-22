@@ -13,14 +13,21 @@ Inspired by EfficientFER and adaptable to multiple backbones.
 fer_project/
 │
 ├── main.py
+
 ├── models/
+
 ├── trainers/
+
 ├── utils/
 │   ├── dataset.py
 │   └── losses.py
+
 ├── cfgs/
+
 ├── dataset/
+
 │   └── icml_face_data.csv
+
 ├── notebooks/
 └── README.md
 
