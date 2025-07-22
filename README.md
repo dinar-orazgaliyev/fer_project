@@ -10,6 +10,7 @@ Inspired by EfficientFER and adaptable to multiple backbones.
 
 ## 📦 Project Structure
 
+```text
 fer_project/
 │
 ├── main.py
@@ -23,6 +24,7 @@ fer_project/
 │   └── icml_face_data.csv
 ├── notebooks/
 └── README.md
+```
 
 
 ## 🔧 Setup
